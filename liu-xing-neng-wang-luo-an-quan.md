@@ -72,12 +72,12 @@
 * 真实用户监控：记录真实的用户访问页面的数据，可以通过打点来收集数据，把采集到的数据上报到服务器，经过数据清洗、加工等工作后，在监控平台上呈现监控数据
 
 1. 通过requestAnimationFrame进行FPS（每秒帧数）监控，当FPS出现大幅波动时可以探查原因\
-   &#x20;!\[]\(assets/1.png)
+  ![](.gitbook/assets/1.png)
 2. 通过Performance API监控主线程空闲时间，可以观察主线程是否过于繁忙导致响应卡顿\
-   ! \[]\(assets/2.png)
+   ![](.gitbook/assets/2.png)
 3. 通过监听长任务事件（PerformanceObserver）分析长任务，长任务会占用主线程时间片、导致干扰响应，常见长任务包括复杂计算、大数据量渲染等\
-   ! \[]\(assets/3.png)
+   ![](.gitbook/assets/3.png)
 4. 模拟慢网络环境。使用模拟工具（如Chrome开发者工具 Network可以选择网络环境）模拟2G、3G等慢网络环境，观察应用性能是否存在问题\
-   ! \[]\(assets/4.png)
+   ![](.gitbook/assets/4.png)
 
 2）负载测试，观察应用的承受能力上限
