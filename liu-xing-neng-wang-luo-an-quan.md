@@ -1,3 +1,21 @@
+---
+coverY: 0
+layout:
+  cover:
+    visible: false
+    size: full
+  title:
+    visible: true
+  description:
+    visible: false
+  tableOfContents:
+    visible: true
+  outline:
+    visible: true
+  pagination:
+    visible: true
+---
+
 # 六、性能、网络、安全
 
 ## 1、性能优化
@@ -72,7 +90,7 @@
 * 真实用户监控：记录真实的用户访问页面的数据，可以通过打点来收集数据，把采集到的数据上报到服务器，经过数据清洗、加工等工作后，在监控平台上呈现监控数据
 
 1. 通过requestAnimationFrame进行FPS（每秒帧数）监控，当FPS出现大幅波动时可以探查原因\
-  ![](.gitbook/assets/1.png)
+   ![](.gitbook/assets/1.png)
 2. 通过Performance API监控主线程空闲时间，可以观察主线程是否过于繁忙导致响应卡顿\
    ![](.gitbook/assets/2.png)
 3. 通过监听长任务事件（PerformanceObserver）分析长任务，长任务会占用主线程时间片、导致干扰响应，常见长任务包括复杂计算、大数据量渲染等\
@@ -81,3 +99,90 @@
    ![](.gitbook/assets/4.png)
 
 2）负载测试，观察应用的承受能力上限
+
+
+
+## 前端性能如何衡量
+
+### （1）Google Web Vitals
+
+Google的新一代Web性能体验和质量指标，其指标包括：
+
+* LCP：Largest Contentful Paint，显示最大内容元素所需时间（衡量网站初次载入速度）；
+* FID：First Input Delay，首次输入延迟时间（衡量网站互动顺畅程度）；
+* CLS：Cumulative Layout Shift，累计布局位移（衡量网页元件视觉稳定性）；
+
+除了以上三个主要衡量指标，还有：
+
+* FCP：First Contentful Paint，首次内容绘制，标记浏览器渲染来自DOM第一位内容的时间点；
+* TTFB：Time To First Byte，读取页面第一个字节的时间。
+
+虽然LCP最大内容绘制是最重要的负载指标，但它也高度依赖于首次内容绘制（FCP）和首字节响应时间（TTFB），这些指标对监控和改进均具有非常重要的意义。
+
+### （2）前端性能数据采集
+
+1）有个[web-vitals库](https://github.com/GoogleChrome/web-vitals)提供了收集这些指标数据的方法&#x20;
+
+2）performance API：W3C性能小组实现，提供多种api来获取一些性能数据，如window.performance.timing、performance.getEntries()、performance.getEntriesByType(type)、performance.getEntriesByName(name, type)、performance.now()、performance.mark()等&#x20;
+
+3）js错误、vue错误、api错误采集  &#x20;
+
+* js错误：通过window.onerror捕获 &#x20;
+* vue错误：通过vue提供的Vue.config.errorHandler方法来捕获  &#x20;
+* api错误：如果用axios来处理api，可以用catch 或 axios拦截器统一处理&#x20;
+
+## 3、Tree Shaking
+
+Tree Shaking是一种通过消除未使用的代码来优化项目包大小的技术。
+
+### （1）选用支持tree shaking的打包工具
+
+不同的打包工具启用tree shaking的方式：
+
+| Webpack                                                                                                                                                 | Rollup                                     | Parcel                                        |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ | --------------------------------------------- |
+| <p>1）使用ES2015模块语法（即import、export）</p><p>2）在webpack.config.js中配置生产环境，Webpack会在生产模式下自动启用tree shaking：<br><img src=".gitbook/assets/6-3-1.png" alt=""></p> | Rollup天生支持ES6模块的导入和导出，并且默认就进行tree shaking。 | Parcel是一个零配置打包器，从Parcel 2开始，自动进行tree shaking。 |
+
+### （2）配置Babel
+
+确保Babel不转换ES6模块到CommonJS，因为这会阻止Webpack和其他打包工具进行tree shaking。在Babel配置文件（.babelrc 或 babel.config.js）中设置：
+
+![](.gitbook/assets/6-3-2.png)
+
+### （3）使用生产环境变量
+
+在生产环境中构建应用时使用环境变量，特别是设置 NODE\_ENV 为 production，能启动更深层次的优化，因为：
+
+1）环境特定的行为
+
+许多JavaScript库和框架，包括React、Vue、Angular等，依赖于环境变量来确定它们应该如何运行。例如当NODE\_ENV设置为production时，React会禁用额外的开发时警告和性能调试工具，这些工具在开发环境中非常有用，但在生产环境中会增加不必要的负担。
+
+2）代码优化和缩小
+
+构建工具如Webpack和Rollup使用NODE\_ENV来决定是否启用某些代码优化策略，例如：
+
+* Tree Shaking：移除未使用的代码；
+* Minification（代码压缩）：通过删除不必要的字符（如空格和注释）和缩短变量名来减少代码体积；
+* Dead Code Elimination（死代码消除）：移除代码中永远不会运行的部分。
+
+3）安全性和稳定性
+
+在生产环境中，应用需要运行得更加安全和稳定。环境变量可以帮助配置应用以隐藏敏感信息和错误详情，避免这些信息在用户端被暴露。例如，避免发送堆栈跟踪或数据库查询错误到前端。
+
+4）性能优化
+
+通过使用环境变量，可以配置应用只加载必要的功能和代码。在生产环境中，你可以禁用那些仅在开发阶段需要的特性，如详细的日志记录和热模块替换（HMR），从而优化性能。
+
+5）第三方服务配置
+
+环境变量允许开发者根据不同的运行环境配置第三方服务，例如数据库、API密钥或其他服务。这样确保应用在所有环境中都使用正确的服务设置，而不会意外地使用测试服务或配置在生产环境中。
+
+
+
+【例子】在Webpack中，可以使用DefinePlugin来定义process.env.NODE\_ENV，Webpack会根据这个值来判断是否启用某些内置优化。按下图配置后，你的JavaScript代码可以通过检查 process.env.NODE\_ENV === production 来决定是否执行某些操作，而且构建工具也会据此优化输出的代码。
+
+![](.gitbook/assets/6-3-3.png)
+
+### （4）检查第三方库
+
+一些第三方库可能不支持tree shaking，特别是那些不适用ES模块语法的库，查看库的文档了解是否支持tree shaking，或者考虑替代库。
