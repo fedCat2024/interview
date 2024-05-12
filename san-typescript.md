@@ -398,3 +398,9 @@ applyMixins(SmartObject, [Disposable, Activatable]);
 let smartObj = new SmartObject();
 setTimeout(() => smartObj.interact(), 1000);
 ```
+
+在这个例子中，SmartObject 类通过 applyMixins 函数集成了 Disposable 和 Activatable 两个 Mixins 的功能。这使得 SmartObject 实例可以调用这两个 Mixins 中定义的所有方法。
+
+### （2）注意事项
+
+使用 Mixins 时要注意，Mixins 可能会引起命名冲突和复杂的继承链问题，需要谨慎设计 Mixins 以避免这些问题。此外，TypeScript 的 Mixins 实现依赖于 JavaScript 的原型继承和对象属性复制，这可能会影响到性能和类型系统的清晰度。因此，在使用 Mixins 之前，务必考虑是否有更简单、更清晰的方法来实现所需的功能复用。
