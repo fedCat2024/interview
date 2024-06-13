@@ -404,3 +404,84 @@ setTimeout(() => smartObj.interact(), 1000);
 ### （2）注意事项
 
 使用 Mixins 时要注意，Mixins 可能会引起命名冲突和复杂的继承链问题，需要谨慎设计 Mixins 以避免这些问题。此外，TypeScript 的 Mixins 实现依赖于 JavaScript 的原型继承和对象属性复制，这可能会影响到性能和类型系统的清晰度。因此，在使用 Mixins 之前，务必考虑是否有更简单、更清晰的方法来实现所需的功能复用。
+
+## 9、Typescript装饰器执行顺序
+
+ts装饰器类型有：参数装饰器、属性装饰器、方法装饰器、访问器装饰器、类装饰器。
+
+执行顺序：内层先执行，同一层级的按书写顺序从上到下、从左到右；但是类装饰器是从下到上。如果有装饰器工厂函数，则装饰器工厂函数最先执行。
+
+注意：
+
+* 如果没有参数装饰器，则顺序为：属性装饰器、方法或访问器装饰器、类装饰器；
+* 如果被方法装饰器装饰的方法的参数也有参数装饰器，则顺序为：参数装饰器、方法或访问器装饰器、属性装饰器、类装饰器。
+
+## 10、已有一个接口，想在这个接口之上加一个属性，怎么做
+
+为现有接口添加新属性，可以通过2种方式来实现：
+
+（1）通过extends扩展接口：创建一个新接口，扩展现有的接口并添加新属性。这是推荐做法，因为这种方式的代码更具可读性和可维护性。
+
+```typescript
+// 定义原始接口
+interface OriginalInterface {
+    property1: string;
+    property2: number;
+}
+
+// 扩展接口并添加新属性
+interface ExtendedInterface extends OriginalInterface {
+    newProperty: boolean;
+}
+
+// 使用扩展接口
+const example: ExtendedInterface = {
+    property1: 'example',
+    property2: 123,
+    property3: true,
+}
+```
+
+（2）类型声明合并：再次声明该已有接口，并添加新属性。某些场景下这种方式也很有用，比如当需要为第三方库中的接口添加属性时。
+
+```typescript
+// 定义原始接口
+interface OriginalInterface {
+    property1: string;
+    property2: number;
+}
+
+// 在同一模块或不同模块中再次声明接口，并添加新属性
+interface OriginalInterface {
+    newProperty: boolean;
+}
+
+// 使用扩展接口
+const example: ExtendedInterface = {
+    property1: 'example',
+    property2: 123,
+    property3: true,
+}
+```
+
+## 11、一个接口有3个属性a、b、c，现在想定义一个类型，只使用其中的a、b属性，该如何实现？
+
+使用Pick实用类型，从现有接口中选择特定的属性来创建一个新的类型。
+
+```typescript
+interface OriginalInterface {
+    a: number;
+    b: string;
+    c: boolean;
+}
+
+// 使用 Pick 从 OriginalInterface 中选择 a 和 b 属性
+type ABType = Pick<OriginalInterface, 'a' | 'b'>;
+
+// 示例使用
+const example: ABType = {
+    a: 1,
+    b: 'example',
+    // c: true // 错误：类型 "ABType" 中不包含属性 "c"
+}
+```
