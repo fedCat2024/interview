@@ -485,3 +485,301 @@ const example: ABType = {
     // c: true // 错误：类型 "ABType" 中不包含属性 "c"
 }
 ```
+
+## 12、可选和必选之间如何做转换？比如一个接口，有a、b、c，我想把这个接口复制出来，把它的c变成可选的，再复制一份出来，把c变成不可选
+
+可以使用 Partial 和 Required 类型操作符来分别将属性变为可选和必选。举例：
+
+```typescript
+// 原始接口
+interface MyInterface {
+    a: string;
+    b: number;
+    c: boolean;
+}
+
+// 将 c 变为可选
+type MyInterfaceWithOptionalC = Omit<MyInterface, 'c'> & Partial<Pick<MyInterface, 'c'>>;
+
+// 将 c 变为必选
+type MyInterfaceWithRequiredC = Omit<MyInterface, 'c'> & Required<Pick<MyInterface, 'c'>>;
+
+// 示例使用
+const example1: MyInterfaceWithOptionalC = {
+    a: 'example',
+    b: 123,
+    // c可以不存在
+}
+
+const example2: MyInterfaceWithOptionalC = {
+    a: 'example',
+    b: 123,
+    c: true, // c也可以存在
+}
+
+const example3: MyInterfaceWithRequiredC = {
+    a: 'example',
+    b: 123,
+    c: true, // c必须存在
+}
+```
+
+其中：\
+1）`Omit<MyInterface, 'c'>`
+
+创建一个新类型，去除 MyInterface 中的 c 属性。
+
+2）`Partial<Pick<MyInterface, 'c'>>`
+
+创建一个新类型，包含 MyInterface 中的 c 属性，并将其设为可选。
+
+3）`Required<Pick<MyInterface, 'c'>>`
+
+创建一个新类型，包含 MyInterface 中的 c 属性，并将其设为必选。
+
+## 13、Partial
+
+Partial使某个类型的所有属性变为可选属性。举例说明：
+
+1）简单的 Partial 用法
+
+```typescript
+interface User {
+    name: string;
+    age: number;
+    email: string;
+}
+
+// 使用 Partial 将所有属性变为可选
+type PartialUser = Partial<User>;
+
+// 示例使用
+const user1: PartialUser = {};
+const user2: PartialUser = { name: 'Alice' };
+const user3: PartialUser = { name: 'Bob', age: 30 }
+
+console.log(user1); // 输出：{}
+console.log(user2); // 输出：{ name: 'Alice' }
+console.log(user3); // 输出：{ name: 'Bob', age: 30 }
+```
+
+2）在函数中使用 Partial
+
+我们可以在函数参数中使用 Partial，使得函数能够接受部分更新参数。
+
+```typescript
+interface User {
+    name: string;
+    age: number;
+    email: string;
+}
+
+function updateUser(user: User, updates: Partial<User>): User {
+    return {...user, ...updates };
+}
+
+// 示例使用
+const user: User = { name: 'Charlie', age: 25, email: 'charlie@example.com' };
+
+const updateUser = updateUser(user, { age: 35 });
+console.log(updateUser); // 输出：{ name: 'Charlie', age: 35, email: 'charlie@example.com' }
+```
+
+3）Partial 和接口组合
+
+可以通过 Partial 将某些接口属性变为可选，然后将其与其他接口组合使用。
+
+比如下面定义了一个新接口 UpdateUserRequest，它继承自 Partial\<User>，所以拥有3个可选属性，并添加了一个新的必选属性 userId。
+
+```typescript
+interface User {
+    name: string;
+    age: number;
+    email: string;
+}
+
+interface UpdateUserRequest extends Partial<User> {
+    userId: number;
+}
+
+// 示例使用
+const updateRequest: UpdateUserRequest = {
+    userId: 1,
+    email: 'newemail@example.com'
+}
+
+console.log(updateRequest); // 输出：{ userId: 1, email: 'newemail@example.com' }
+```
+
+## 14、举个泛型的例子，比如一个方法参数是泛型，你是如何使用的
+
+Typescript泛型允许创建可重用的组件，能够处理多种类型而不是单一的类型。泛型广泛应用于函数、接口和类中。
+
+1）泛型函数
+
+以下泛型函数可以处理不同类型的数据，并返回相同类型的数据。
+
+```typescript
+// 定义一个泛型函数，参数和返回值类型相同
+function identity<T>(arg: T): T {
+    return arg;
+}
+
+// 使用泛型函数
+const stringOutput = identity<string>('hello');
+const numberOutput = identity<number>(42);
+
+console.log(stringOutput); // 输出：'hello'
+console.log(numberOutput); // 输出：42
+```
+
+2）泛型接口
+
+可以使用泛型定义接口，以便灵活地处理不同类型的数据。
+
+下面例子中，Container 接口接受一个泛型参数 T，使得 value 属性可以是任何类型。
+
+```typescript
+// 定义一个泛型接口
+interface Container<T> {
+    value: T;
+}
+
+// 使用泛型接口
+const stringContainer: Container<string> = { value: 'hello' };
+const numberContainer: Container<number> = { value: 42 };
+
+console.log(stringContainer); // 输出：'hello'
+console.log(numberContainer); // 输出：42
+```
+
+3）泛型类
+
+```typescript
+// 定义一个泛型类
+class Box<T> {
+    contents: T;
+    
+    constructor(contents: T) {
+        this.contents = contents;
+    }
+    
+    getContents(): T {
+        return this.contents;
+    }
+}
+
+// 使用泛型类
+const stringBox = new Box<string>('A string');
+const numberBox = new Box<number>(123);
+
+console.log(stringBox.getContents()); // 输出：'A string'
+console.log(numberBox.getContents()); // 输出：123
+```
+
+4）泛型约束
+
+有时我们希望泛型参数满足某些条件，可以使用泛型约束。比如下面的例子里，使用 `T extends Lengthwise` 约束了泛型参数 T，确保 T 类型具有 length 属性。
+
+```typescript
+// 定义一个具有约束的泛型接口
+interface Lengthwise {
+    length: number;
+}
+
+// 定义一个泛型函数，要求 T 类型必须具有 length 属性
+function loggingIdentity<T extends Lengthwise>(arg: T): T {
+    console.log(arg.length); // 现在可以访问 length 属性
+    return arg;
+}
+
+// 使用泛型函数
+const arrayOutput = loggingIdentity([1, 2, 3]); // 输出：3
+const stringOutput = loggingIdentity('hello'); // 输出：5
+
+// 编译错误: Argument of type 'number' is not assignable to parameter of type 'Lengthwise'
+// const numberOutput = loggingIdentity(42);
+```
+
+5）多个泛型参数
+
+可以定义接受多个泛型参数的函数。
+
+```typescript
+// 定义一个接受两个泛型参数的函数
+function combine<T, U>(first: T, second: U): [T, U] {
+    return [first, second];
+}
+
+// 使用泛型函数
+const combineResult = combine<string, number>('hello', 42);
+console.log(combineResult); // 输出：['hello', 42]
+```
+
+## 15、Record类型
+
+Record类型是Typescript中一个实用的泛型类型，提供了一种简介的方法来定义具有指定类型键和值的对象。
+
+### （1）Record类型定义
+
+```typescript
+type Record<K extends keyof any, T> = {
+    [P in K]: T;
+}
+```
+
+其中K表示键的类型，必须是一个字符串或数字；T表示值的类型。
+
+### （2）作用和用途
+
+1）定义具有特定键和值类型的对象
+
+使用 Record 可以快速定义一个对象类型，其所有键的类型和所有值的类型都是已知的，例如：
+
+```typescript
+// 定义一个对象类型，键是字符串类型，值是数字类型
+type NumberDictionary = Record<string, number>;
+
+const scores: NumberDictionary = {
+    Alice: 95,
+    Bob: 82,
+    Charlie: 88
+}
+```
+
+2）限制对象的键和值类型
+
+Record 允许你限制对象的键和值的类型，使得对象更加类型安全，例如：
+
+```typescript
+interface Person {
+    name: string;
+    age: number;
+}
+
+// 定义一个对象类型，键是字符串类型，值是 Person 类型
+type PersonDictionary = Record<string, Person>;
+
+const people: PersonDictionary = {
+    person1: { name: 'Alice', age: 25 },
+    person2: { name: 'Bob', age: 35 },
+}
+```
+
+3）构建复杂的对象类型
+
+通过 Record 可以构建更复杂的对象类型，特别是当对象的键和值有复杂的类型要求时。例如：
+
+```typescript
+interface User {
+    id: number;
+    name: string;
+}
+
+type UsersById = Record<number, User>;
+
+const users: UsersById = {
+    1: { id: 1, name: 'Alice' },
+    2: { id: 2, name: 'Bob' },
+}
+```
