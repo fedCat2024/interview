@@ -91,3 +91,52 @@ React的虚拟DOM是React框架的核心特征之一，旨在提高应用的性�
 ### （5）Vue与React的Virtual DOM区别
 
 ### （6）Virtual DOM有什么作用？
+
+Virtual DOM的6个作用：
+
+1）提高性能：减少昂贵的直接DOM操作；
+
+2）提高应用的响应性：
+
+如数据频繁变化时，不需要频繁操作DOM，虚拟DOM可以通过**批量更新**和**异步渲染**来保持流畅的用户体验。如React通过其Fiber架构引入时间切片和优先级更新的概念，这允许框架在保持高性能的同时，还能执行低优先级的更新。
+
+3）让开发者专注于数据和状态，而不是DOM；
+
+4）组件的高度抽象化：
+
+使得构建大型应用变得更加模块化和可维护。每个组件都有自己的状态和逻辑，可以独立更新，让开发和测试变得更加简单。
+
+5）可以更好地实现SSR，同构渲染等；
+
+6）跨平台能力：如React Native、Weex等。
+
+## 6、React16
+
+（1）React理念
+
+React的理念是实现**快速响应**，快速响应的制约因素和解决办法有：
+
+1. cpu瓶颈：时间分片，即将同步更新变为**可中断的异步更新**；
+2. io瓶颈：尽量减少用户对网络延迟的感知（网络延迟本身是前端无法解决的），suspense功能及配套的hook useDeferredValue。
+
+（2）React15被重构的原因：不能满足快速响应理念、不能支持异步更新。
+
+具体地：
+
+1. 递归更新子组件，中途无法中断；
+2. 协调器（Reconciler）和渲染器（Renderer）交替工作（即协调器发现1个变化、渲染器更新1个变化，协调器再发现1个变化、渲染器再更新1个变化……），如果强行中断（这只是一种假设，实际上React15不能中断）、用户会看见更新不完全的DOM。
+
+（3）React16（2017.9.26首发）架构：调度器（Scheduler） + 协调器（Reconciler） + 渲染器（Renderer）。
+
+1. Scheduler：调度任务的优先级，高优先级任务优先进入Reconciler；
+2. 在React16中，Reconciler 和 Renderer 不再交替工作，而是 Reconciler 将变化的虚拟DOM全部打上标记之后，再交给Renderer；
+3. Scheduler 和 Reconciler 的工作可能被中断（原因1：有更高优先级任务；原因2：当前帧没有剩余时间了）。
+
+（4）Fiber架构
+
+双缓存（在内存中构建并直接替换）：current Fiber树 和 workInProgress Fiber树，他们通过 alternate 属性链接。
+
+```javascript
+currentFiber.alternate === workInProgressFiber;
+workInProgressFiber.alternate === currentFiber;
+```
