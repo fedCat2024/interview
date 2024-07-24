@@ -140,3 +140,65 @@ React的理念是实现**快速响应**，快速响应的制约因素和解决�
 currentFiber.alternate === workInProgressFiber;
 workInProgressFiber.alternate === currentFiber;
 ```
+
+## 7、Vue组件通信
+
+1）props、$emit
+
+2）ref
+
+3）$parent 或 $root
+
+4）provided 与 inject
+
+5）attrs 与 listeners
+
+6）Vue.observable
+
+7）eventBus
+
+8）Vuex
+
+## 8、状态管理工具
+
+### （1）从MVC讲起
+
+M（Model）：业务数据，V（View）：用户界面，C（Controller）：控制器。
+
+当项目越来越大、逻辑越来越复杂时，可能会出现多个View对应多个Model的情况，这就导致了数据流动方式的混乱。
+
+以Backbone为例，由于Model对外直接暴露了set和on方法，导致View层可以随意改变Model中的值，也可以随意监听Model中值的变化。这样的设定最终会导致一个庞大的Model中的某个字段变化后，可能触发无数个change事件。在这些change事件的回调中，可能还有新的set方法调用，导致更多的change事件。更糟糕的是，一个Model还能改变另一个Model的值，整个数据流动的方式变得更加混乱，不可捉摸。
+
+### （2）Flux
+
+为了解决MVC的问题，Flux应运而生。
+
+Flux是一套基于dispatcher的前端应用架构模式，其核心思想是**数据和逻辑永远单向流动**。
+
+Dispatcher是Flux中的核心概念，它有2个API：1）register：用来注册一个监听器；2）dispatch：用来分发一个action。
+
+所有请求和改变都只能通过action发出，统一由Dispatcher来分配。
+
+Store负责保存数据，并定义修改数据的逻辑；它调用Dispatcher的register方法将自己注册为一个监听器，这样每当使用Dispatcher的dispatch方法分发一个action时，Store注册的监听器就会被调用。Store只对外暴露getter（读取器）而不暴露setter（设置器），这意味着在Store之外只能读取Store中的数据而不能进行任何修改。
+
+对于View，如果界面操作需要修改数据，则必须使用Dispatcher分发一个action。
+
+这样就保证了数据和逻辑的单向流动。各个角色之间不会像前端MVC那样存在交错的连线，Store中的数据的变化不再混乱：
+
+&#x20;1）View可以保持高度简洁：它不需要关心太多的逻辑，只需要关心传入的数据；
+
+2）控制了所有的数据，发生问题时可以方便排查：比起MVC架构下数据或逻辑的改动可能来自多个完全不同的源头，Flux架构追查问题的复杂度和困难度显然要小得多；
+
+3）Flux把action做了统一归纳，提高了系统抽象程度：不论action是由用户触发的，从服务端发起的，还是应用本身的行为，对于我们而言，它都只是一个动作我而已；与MVC架构下不同的触发方式管理的混乱相比，Flux要优雅许多。
+
+**Flux是一种架构思想，有很多对Flux思想的不同实现**，如Redux、MobX、Vuex等等。
+
+### （3）Redux
+
+
+
+### （4）MobX
+
+### （5）Vuex
+
+### （6）MobX、Redux、Vuex对比
